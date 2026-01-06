@@ -1,0 +1,10 @@
+Student
+Instructor
+Track
+Course
+Exam
+Question
+
+for athenication add User entity and (Student, Instructor) entities inherit from it  
+
+optional entities branch, intake, faculty, topics, ...

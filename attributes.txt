@@ -1,0 +1,55 @@
+Student
+-ID (PK)
+-student name (first name + last name)
+-age
+-gender
+-phone(s)
+-national ID
+-city
+-email
+...
+
+Instructor
+-ID (PK)
+-instructor name (first name + last name)
+-age 
+-gender
+-phone(s)
+-salary
+-hiring date
+-city
+-email
+...
+
+Track
+-ID (PK)
+-track name
+-description
+
+Course
+-ID (PK)
+-course name
+-duration
+-description
+
+Exam
+-ID (PK)
+-exam name
+-exam date
+-max grade
+-strat time
+-end time
+
+Question
+-ID (PK)
+-question type (mcq, T or F)
+-choise(s)
+-correct answer
+-marks
+...
+optional (difficulty, question topic, ...)
+
+
+take (relation)
+-student answer
+-score

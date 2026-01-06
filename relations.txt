@@ -1,0 +1,10 @@
+Student (N) = enroll — (1) Track
+Instructor (1) — supervise = (1) Track
+Instructor (N) = Teach = (1) Course
+Track (M) = have = (N) Course
+Course (1) — have = (1) Exam
+Course (1) — have = (N) Question
+Exam (1) = have = (N) Question
+Student (M) = take = (N) Exam (N) = take = (K) Question
+
+
