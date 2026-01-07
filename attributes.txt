@@ -1,3 +1,20 @@
+User
+-ID (PK)
+-student name (first name + last name)
+-age
+-gender
+-email
+-username
+-password_hash
+-phone(s)
+-status (active / inactive)
+-created_at
+-role (optional)
+
+Admin > User
+-ID (PK)
+...
+
 Student
 -ID (PK)
 -student name (first name + last name)
@@ -32,6 +49,10 @@ Course
 -duration
 -description
 
+Topic
+-ID (PK)
+-topic name
+
 Exam
 -ID (PK)
 -exam name
@@ -50,6 +71,4 @@ Question
 optional (difficulty, question topic, ...)
 
 
-take (relation)
--student answer
--score
+Not updated yet
