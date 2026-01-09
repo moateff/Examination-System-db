@@ -57,7 +57,7 @@ CREATE TABLE Topic
     TopicID INT IDENTITY PRIMARY KEY,
     TopicName NVARCHAR(100) NOT NULL,
     CourseID INT NOT NULL,
-    Description NVARCHAR(50) NULL,
+    Description NVARCHAR(50) NOT NULL,
     CONSTRAINT FK_Topic_Course FOREIGN KEY (CourseID)
         REFERENCES Course(CourseID)
 ) ON 'FG_MASTER';
