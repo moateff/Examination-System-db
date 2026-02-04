@@ -1,45 +1,95 @@
-select * from ModelAnswers
-select * from Questions
-select * from Exams
-select * from StudentAnswers
-select * from StudentExams
+CREATE OR ALTER PROCEDURE Exam.CorrectExam
+    @ExamID INT,
+    @ExaminerID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
 
+    DECLARE @TargetType CHAR(1);
+    DECLARE @ExamTotalMarks INT;
 
-create proc sp_CorrectExam @examid int, @studentid int
-as
-begin
+    SELECT
+        @TargetType = TargetType,
+        @ExamTotalMarks = ExamTotalMarks
+    FROM Exam.Exam
+    WHERE ExamID = @ExamID;
 
-declare @totalMarks int
-declare @studentSum int = 0, @correctChoice int, @questionIndividualMark int
-select @totalMarks = totalmarks from Exams where Examid = @examid
+    IF @TargetType IS NULL
+        THROW 50011, 'Exam does not exist.', 1;
 
-declare c1 cursor
-for select QuestionId, Studentchoicenumber from StudentAnswersForExam(@examid,@studentid)
-for read only
-declare @questionId int, @studentchoiceid int
-open c1
-fetch c1 into @questionId, @studentchoiceid
-while @@FETCH_STATUS = 0
-	begin
-		select @questionIndividualMark = mark from Questions where QuestionID = @questionId
-		select @correctChoice = choiceNumber from ModelAnswers where QuestionID = @questionId
+    -- validate examiner by target type
+    IF @TargetType = 'S'
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM Users.Student WHERE StudentID = @ExaminerID)
+            THROW 50012, 'Student does not exist for this exam.', 1;
+    END
+    ELSE IF @TargetType = 'A'
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM Users.Applicant WHERE ApplicantId = @ExaminerID)
+            THROW 50013, 'Applicant does not exist for this exam.', 1;
+    END
+    ELSE
+        THROW 50014, 'Invalid exam target type.', 1;
 
-		if @studentchoiceid = @correctChoice
-			set @studentSum = @studentSum + @questionIndividualMark;
+    -- submission exists
+    IF NOT EXISTS (
+        SELECT 1
+        FROM Exam.ExamInstance
+        WHERE ExamID = @ExamID AND ExaminerID = @ExaminerID
+    )
+        THROW 50015, 'No submission found for this examiner/exam.', 1;
 
-		fetch c1 into @questionId, @studentchoiceid
-	end
-close c1
-deallocate c1
+    WITH Q AS (
+        SELECT eq.QuestionId, q.Mark
+        FROM Exam.ExamQuestions eq
+        JOIN Question_Bank.Question q ON q.QuestionID = eq.QuestionId
+        WHERE eq.ExamId = @ExamID
+    ),
+    CorrectAns AS (
+        SELECT ma.QuestionID, ma.ChoiceNumber
+        FROM Question_Bank.ModelAnswer ma
+        WHERE ma.QuestionID IN (SELECT QuestionId FROM Q)
+    ),
+    ExaminerAns AS (
+        SELECT ea.QuestionID, ea.ExaminerChoiceNumber
+        FROM Exam.ExaminerAnswer ea
+        WHERE ea.ExamID = @ExamID
+          AND ea.ExaminerID = @ExaminerID
+    ),
+    Scored AS (
+        SELECT
+            Q.QuestionId,
+            Q.Mark,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM ExaminerAns s
+                    JOIN CorrectAns c
+                      ON c.QuestionID = s.QuestionID
+                     AND c.ChoiceNumber = s.ExaminerChoiceNumber
+                    WHERE s.QuestionID = Q.QuestionId
+                )
+                THEN Q.Mark
+                ELSE 0
+            END AS Earned
+        FROM Q
+    )
 
+    SELECT
+        COUNT(*) AS TotalQuestions,
+        @ExamTotalMarks AS TotalMarks,
+        SUM(Earned) AS EarnedMarks
+    INTO #Result
+    FROM Scored;
 
-declare @percentage decimal(5,2);
-set @percentage = cast(@studentSum as decimal(5,2)) / @totalMarks * 100;
+    DECLARE @Earned INT = (SELECT EarnedMarks FROM #Result);
 
-select concat(@percentage, '%') as StudentScore;
+    UPDATE Exam.ExamInstance
+    SET ExaminerGrade = @Earned
+    WHERE ExamID = @ExamID AND ExaminerID = @ExaminerID;
 
-end
+    SELECT * FROM #Result;
 
-
---test
-exec sp_CorrectExam 5,1
+    DROP TABLE #Result;
+END;
+GO
