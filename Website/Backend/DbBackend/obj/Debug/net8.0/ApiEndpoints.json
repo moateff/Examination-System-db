@@ -1,0 +1,34 @@
+[
+  {
+    "ContainingType": "DbBackend.Controllers.SystemController",
+    "Method": "GetNumber",
+    "RelativePath": "api/System/{CourseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "CourseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DbBackend.Controllers.SystemController",
+    "Method": "GetAvailableExams",
+    "RelativePath": "api/System/available-exams/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
