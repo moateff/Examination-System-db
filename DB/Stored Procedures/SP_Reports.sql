@@ -105,13 +105,17 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE Reports.ExamWithQuestionsAndChoices
+CREATE OR ALTER PROCEDURE Reports.ExamHeader
     @ExamID INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF NOT EXISTS (SELECT 1 FROM Exam.Exam WHERE ExamID = @ExamID)
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM Exam.Exam 
+        WHERE ExamID = @ExamID
+    )
         THROW 73001, 'Exam does not exist.', 1;
 
     SELECT
@@ -123,8 +127,18 @@ BEGIN
         e.ExamTotalMarks,
         e.TargetType
     FROM Exam.Exam e
-    JOIN Curriculum.Course c ON c.CourseID = e.CourseID
+    INNER JOIN Curriculum.Course c 
+        ON c.CourseID = e.CourseID
     WHERE e.ExamID = @ExamID;
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE Reports.ExamQuestionsWithChoices
+    @ExamID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
 
     SELECT
         q.QuestionID,
@@ -135,12 +149,17 @@ BEGIN
         ch.ChoiceNumber,
         ch.ChoiceText
     FROM Exam.ExamQuestions eq
-    JOIN Question_Bank.Question q ON q.QuestionID = eq.QuestionId
-    LEFT JOIN Question_Bank.Choice ch ON ch.QuestionID = q.QuestionID
+    INNER JOIN Question_Bank.Question q 
+        ON q.QuestionID = eq.QuestionId
+    LEFT JOIN Question_Bank.Choice ch 
+        ON ch.QuestionID = q.QuestionID
     WHERE eq.ExamId = @ExamID
-    ORDER BY q.QuestionID, ch.ChoiceNumber;
+    ORDER BY 
+        q.QuestionID,
+        ch.ChoiceNumber;
 END;
 GO
+
 
 
 CREATE OR ALTER PROCEDURE Reports.ExamWithCorrectAndExaminerAnswers
