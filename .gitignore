@@ -2,3 +2,5 @@
 *.ldf
 *.ndf
 *.mdf
+/Website/Backend/DbBackend/bin
+/Website/Backend/DbBackend/obj
