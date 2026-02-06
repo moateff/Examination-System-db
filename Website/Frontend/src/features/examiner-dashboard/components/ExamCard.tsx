@@ -1,38 +1,63 @@
-import { Clock, Calendar, ChevronRight } from 'lucide-react';
-import type { Exam } from '@/features/examiner-dashboard/services/examService';
+import { Clock, Calendar, ChevronRight, BookOpen } from 'lucide-react';
+import type { Exam } from '@/features/examiner-dashboard/types';
 
 interface ExamCardProps {
     exam: Exam;
     onStart: (exam: Exam) => void;
+    isActive?: boolean;
+    hasOtherActiveExam?: boolean;
 }
 
-export default function ExamCard({ exam, onStart }: ExamCardProps) {
+export default function ExamCard({ exam, onStart, isActive = false, hasOtherActiveExam = false }: ExamCardProps) {
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-xl hover:shadow-red-500/5 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-red-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-bottom"></div>
+        <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-lg hover:border-red-300 transition-all duration-300 group">
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="shrink-0 w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 transition-colors">
+                        <BookOpen size={20} className="text-red-500" />
+                    </div>
 
-            <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-red-600 transition-colors">
-                {exam.courseName || `Exam ${exam.courseId}`}
-            </h3>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-semibold text-slate-800 truncate group-hover:text-red-600 transition-colors">
+                            {exam.courseName}
+                        </h3>
+                        <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
+                            <div className="flex items-center gap-1.5">
+                                <Calendar size={14} className="text-slate-400" />
+                                <span>{formatDate(exam.examDate)}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Clock size={14} className="text-slate-400" />
+                                <span>{exam.duration} min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div className="space-y-3 mb-6 text-slate-500 text-sm">
-                <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-red-400" />
-                    <span>{exam.date || 'Flexible Date'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-red-400" />
-                    <span>{exam.duration || 60} Minutes</span>
-                </div>
+                <button
+                    onClick={() => onStart(exam)}
+                    disabled={hasOtherActiveExam}
+                    className={`shrink-0 flex items-center gap-2 px-4 py-2 text-white text-sm font-medium rounded-lg transition-all duration-300 ${hasOtherActiveExam
+                        ? 'bg-gray-400 cursor-not-allowed opacity-50'
+                        : isActive
+                            ? 'bg-red-500/80 hover:bg-red-600/50 cursor-pointer group-hover:shadow-md'
+
+                            : 'bg-red-500 hover:bg-red-600 cursor-pointer group-hover:shadow-md'
+                        }`}
+                >
+                    {isActive ? 'Continue Exam' : 'Start Exam'}
+                    <ChevronRight size={16} />
+                </button>
             </div>
-
-            <button
-                onClick={() => onStart(exam)}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-slate-50 hover:bg-red-500 hover:text-white text-slate-700 border border-slate-200 hover:border-red-500 rounded-lg transition-all duration-300 font-semibold group-hover:shadow-md"
-            >
-                Start Exam
-                <ChevronRight size={18} />
-            </button>
         </div>
     );
 }

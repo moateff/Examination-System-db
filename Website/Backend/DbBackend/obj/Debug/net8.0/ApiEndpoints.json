@@ -1,22 +1,6 @@
 [
   {
     "ContainingType": "DbBackend.Controllers.SystemController",
-    "Method": "GetNumber",
-    "RelativePath": "api/System/{CourseId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "CourseId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DbBackend.Controllers.SystemController",
     "Method": "GetAvailableExams",
     "RelativePath": "api/System/available-exams/{userId}",
     "HttpMethod": "GET",
@@ -26,6 +10,59 @@
       {
         "Name": "userId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DbBackend.Controllers.SystemController",
+    "Method": "GetExam",
+    "RelativePath": "api/System/exam/{CourseId}/{ExamId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "CourseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "ExamId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DbBackend.Controllers.SystemController",
+    "Method": "Login",
+    "RelativePath": "api/System/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "loginRequest",
+        "Type": "DbBackend.Data.DTOs.LoginDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DbBackend.Controllers.SystemController",
+    "Method": "SubmitExam",
+    "RelativePath": "api/System/submit-exam",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "submitRequest",
+        "Type": "DbBackend.Data.DTOs.SubmitExamDto",
         "IsRequired": true
       }
     ],

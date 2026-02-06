@@ -16,6 +16,19 @@ namespace DbBackend
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<ExaminationSystemContext>();
+
+            // Add CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowLocalhost", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -26,6 +39,8 @@ namespace DbBackend
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("AllowLocalhost");
 
             app.UseAuthorization();
 

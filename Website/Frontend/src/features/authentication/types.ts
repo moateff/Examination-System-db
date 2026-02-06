@@ -1,16 +1,20 @@
 
 
 export const UserRole = {
-    STUDENT: "student",
-    EXAMINER: "examiner",
-    ADMIN: "admin",
+    STUDENT: "S",
+    APPLICANT: "P",
+    ADMIN: "A",
+    INSTRUCTOR: "I",
 } as const;
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export interface User {
-    id: string;
-    name: string;
+    userID: number;
+    fName: string;
+    lName: string;
+    username: string;
     email: string;
     role: UserRole;
+    gender: string;
 }

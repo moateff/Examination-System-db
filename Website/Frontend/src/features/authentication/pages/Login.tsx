@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
             <div className="absolute top-0 left-0 w-full h-full bg-primary -z-10"></div>
 
             <div className="w-full max-w-md p-8 bg-card-primary rounded-2xl border border-border-primary orange-glow fade-in z-10">
-                <h2 className="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-[image:var(--color-text-linear)]">
+                <h2 className="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-(image:--color-text-linear)">
                     Welcome Back
                 </h2>
                 <p className="text-center text-font-gray mb-8">
@@ -93,7 +93,7 @@ const LoginPage: React.FC = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3.5 px-4 bg-gradient-to-r from-[var(--color-btn-primary-color1)] to-[var(--color-btn-primary-color2)] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-btn-primary-color1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3.5 px-4 bg-linear-to-r from-(--color-btn-primary-color1) to-btn-primary-color2 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-btn-primary-color1 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? (
                             <span className="flex items-center justify-center gap-2">

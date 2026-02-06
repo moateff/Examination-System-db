@@ -17,7 +17,7 @@ public partial class ExaminationSystemContext : DbContext
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server = .; Database = Examination_System; Trusted_Connection = True; TrustServerCertificate = True;");
+        => optionsBuilder.UseSqlServer("Data Source=localhost\\SQLEXPRESS;Initial Catalog=Examination_System;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;Command Timeout=0");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +29,7 @@ public partial class ExaminationSystemContext : DbContext
         modelBuilder.Entity<ApplicantIdDto>().HasNoKey();
         modelBuilder.Entity<StudentIdDto>().HasNoKey();
         modelBuilder.Entity<UserRoleDto>().HasNoKey();
+        modelBuilder.Entity<LoginResponseDto>().HasNoKey();
 
         OnModelCreatingPartial(modelBuilder);
     }

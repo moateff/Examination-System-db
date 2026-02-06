@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { ChevronDown, LayoutDashboard, LogOut, Menu, X, User, Mail, Shield } from "lucide-react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { logout } from "@/features/authentication/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -12,6 +12,26 @@ export default function Navbar() {
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
     const dropdownRef = useRef<HTMLLIElement>(null);
+
+    const getRoleLabel = (role: string) => {
+        switch (role) {
+            case "S": return "Student";
+            case "A": return "Admin";
+            case "I": return "Instructor";
+            case "P": return "Applicant";
+            default: return "User";
+        }
+    };
+
+    const getRoleBadgeColor = (role: string) => {
+        switch (role) {
+            case "S": return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+            case "A": return "bg-red-500/10 text-red-500 border-red-500/20";
+            case "I": return "bg-green-500/10 text-green-500 border-green-500/20";
+            case "P": return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+            default: return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+        }
+    };
 
     const isActive = (path: string) => {
         if (path === "/") return location.pathname === "/";
@@ -59,20 +79,41 @@ export default function Navbar() {
 
                                     {/* Dropdown Menu */}
                                     {dropdownOpen && (
-                                        <ul className="absolute right-0 mt-2 w-40 bg-primary border border-border-primary rounded-md shadow-lg overflow-hidden z-50">
-                                            <li>
-                                                <Link
-                                                    to={user.role === 'admin' ? "/admin-dashboard" : "/dashboard"}
-                                                    className="flex items-center gap-2 px-4 py-2 text-sm text-font-gray hover:bg-secondary hover:text-font-white transition"
-                                                    onClick={() => setDropdownOpen(false)}
-                                                >
-                                                    <LayoutDashboard className="w-4 h-4" /> Dashboard
-                                                </Link>
+                                        <ul className="absolute right-0 mt-2 w-64 bg-primary border border-border-primary rounded-md shadow-lg overflow-hidden z-50">
+                                            {/* User Info Section */}
+                                            <li className="px-4 py-3 border-b border-border-primary bg-secondary/30">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                                                        <User className="w-5 h-5 text-red-500" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-semibold text-font-white truncate">
+                                                            {user.fName} {user.lName}
+                                                        </p>
+                                                        <div className="flex items-center gap-1.5 mt-1">
+                                                            <span className={`text-xs px-2 py-0.5 rounded-full border ${getRoleBadgeColor(user.role)}`}>
+                                                                {getRoleLabel(user.role)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </li>
+
+                                            {/* Email Section */}
+                                            <li className="px-4 py-2.5 border-b border-border-primary">
+                                                <div className="flex items-center gap-2">
+                                                    <Mail className="w-4 h-4 text-font-gray shrink-0" />
+                                                    <span className="text-xs text-font-gray truncate" title={user.email}>
+                                                        {user.email}
+                                                    </span>
+                                                </div>
+                                            </li>
+
+                                            {/* Actions */}
                                             <li>
                                                 <button
                                                     onClick={handleLogout}
-                                                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-font-gray hover:bg-secondary hover:text-font-white transition"
+                                                    className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-font-gray hover:bg-secondary hover:text-font-white transition"
                                                 >
                                                     <LogOut className="w-4 h-4" /> Logout
                                                 </button>
@@ -105,13 +146,37 @@ export default function Navbar() {
 
                         {user ? (
                             <>
-                                <div className="border-t border-border-primary"></div>
-                                <span className="block px-3 py-2 text-sm text-font-gray">
-                                    Hello, {user.username || "User"}
-                                </span>
+                                <div className="border-t border-border-primary pt-2"></div>
+
+                                {/* Mobile User Info */}
+                                <div className="px-3 py-3 bg-secondary/30 rounded-md mb-2">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                                            <User className="w-5 h-5 text-red-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-font-white truncate">
+                                                {user.fName} {user.lName}
+                                            </p>
+                                            <div className="flex items-center gap-1.5 mt-1">
+                                                <Shield className="w-3 h-3 text-font-gray" />
+                                                <span className={`text-xs px-2 py-0.5 rounded-full border ${getRoleBadgeColor(user.role)}`}>
+                                                    {getRoleLabel(user.role)}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 mt-2">
+                                                <Mail className="w-3 h-3 text-font-gray" />
+                                                <span className="text-xs text-font-gray truncate">
+                                                    {user.email}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <Link
                                     to="/dashboard"
-                                    className="block px-3 py-2 rounded-md text-base font-medium text-font-gray hover:text-font-white hover:bg-secondary/30 items-center gap-1"
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-font-gray hover:text-font-white hover:bg-secondary/30 flex items-center gap-2"
                                     onClick={() => setOpen(false)}
                                 >
                                     <LayoutDashboard className="w-4 h-4" />
@@ -119,7 +184,7 @@ export default function Navbar() {
                                 </Link>
 
                                 <button
-                                    className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-font-gray hover:text-font-white hover:bg-secondary/30 flex items-center gap-1"
+                                    className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-font-gray hover:text-font-white hover:bg-secondary/30 flex items-center gap-2"
                                     onClick={() => { handleLogout(); setOpen(false); }}
                                 >
                                     <LogOut className="w-4 h-4" />

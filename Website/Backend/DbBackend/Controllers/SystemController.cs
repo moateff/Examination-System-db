@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace DbBackend.Controllers
 {
@@ -18,24 +19,15 @@ namespace DbBackend.Controllers
             _context = context;
         }
 
-        [HttpGet("{CourseId}")]
-        public IActionResult GetNumber(int CourseId)
+        [HttpGet("exam/{CourseId}/{ExamId}")]
+        public IActionResult GetExam(int CourseId, int ExamId)
         {
-            // Step 1: Get exam ID
-            var examDto = _context.Set<ExamIdDto>()
-                .FromSqlRaw("EXEC Exam.getAnExam @crsId",new SqlParameter("@crsId", CourseId)).AsNoTracking().AsEnumerable().FirstOrDefault();
-
-            if (examDto == null)
-                return NotFound("No exam found for this course");
-
-            // Step 2: Get FLAT questions + answers
             var rawData = _context.Set<QuestionFlatDto>()
-                .FromSqlRaw("EXEC Exam.getQuestionsWithAnswers @exId",new SqlParameter("@exId", examDto.ExamId)).AsNoTracking().ToList();
+                .FromSqlRaw("EXEC Exam.getQuestionsWithAnswers @exId",new SqlParameter("@exId", ExamId)).AsNoTracking().ToList();
 
             if (!rawData.Any())
-                return NotFound("No questions found for this exam");
+                return NotFound(new { Success = false, Message = "No questions found for this exam" });
 
-            // Step 3: Group & build clean structure
             var result = rawData
                 .GroupBy(q => new
                 {
@@ -62,62 +54,105 @@ namespace DbBackend.Controllers
                 })
                 .ToList();
 
-            return Ok(result);
+            return Ok(new { Success = true, Message = "Questions retrieved successfully", Data = result });
+        }
+
+            [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginDto loginRequest)
+        {
+            if (loginRequest == null || string.IsNullOrEmpty(loginRequest.Username) || string.IsNullOrEmpty(loginRequest.Password))
+                return BadRequest("Username and password are required");
+
+            try
+            {
+                var loginResponse = _context.Set<LoginResponseDto>()
+                    .FromSqlRaw(
+                        "EXEC Users.Login @Username, @Password",
+                        new SqlParameter("@Username", loginRequest.Username),
+                        new SqlParameter("@Password", loginRequest.Password))
+                    .AsNoTracking()
+                    .AsEnumerable()
+                    .FirstOrDefault();
+
+                if (loginResponse == null)
+                    return Unauthorized(new { Success = false, Message = "Invalid username or password" });
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Login successful",
+                    Data = loginResponse
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred during login: {ex.Message}");
+            }
         }
 
         [HttpGet("available-exams/{userId}")]
         public IActionResult GetAvailableExams(int userId)
         {
-            // 1️ - Get user role
-            var role = _context.Set<UserRoleDto>()
-                .FromSqlRaw("EXEC Users.CheckUserType @UserID",new SqlParameter("@UserID", userId)).AsNoTracking().AsEnumerable().FirstOrDefault();
-
-            if (role == null)
-                return NotFound("User not found");
-
-            // 2️ - Student
-            if (role.RoleType == "Student")
+            try
             {
-                var studentId = _context.Set<StudentIdDto>()
-                    .FromSqlRaw("EXEC Users.GetStudentIdByUserId @UserID",new SqlParameter("@UserID", userId)).AsNoTracking().AsEnumerable().FirstOrDefault();
-
-                if (studentId == null)
-                    return NotFound("Student not found");
-
                 var exams = _context.Set<CourseDto>()
-                    .FromSqlRaw("EXEC GetCourseExamsForStudent @stdId",new SqlParameter("@stdId", studentId.StudentID)).AsNoTracking().ToList();
+                        .FromSqlRaw("EXEC Exam.GetAvailableExams @appId", new SqlParameter("@appId", userId)).AsNoTracking().ToList();
 
-                return Ok(new
-                {
-                    Role = "Student",
-                    Exams = exams
-                });
-            }
-
-            // 3️ - Applicant
-            if (role.RoleType == "Applicant")
+                return Ok(new { Success = true, Message = "Exams retrieved successfully", Data = exams });
+            }catch (Exception ex)
             {
-                var applicantId = _context.Set<ApplicantIdDto>()
-                    .FromSqlRaw("EXEC Users.GetApplicantIdByUserId @UserID",new SqlParameter("@UserID", userId)).AsNoTracking().AsEnumerable().FirstOrDefault();
-
-                if (applicantId == null)
-                    return NotFound("Applicant not found");
-
-                var exams = _context.Set<CourseDto>()
-                    .FromSqlRaw("EXEC GetCourseExamsForApplicants @appId",new SqlParameter("@appId", applicantId.ApplicantId)).AsNoTracking().ToList();
-
-                return Ok(new
-                {
-                    Role = "Applicant",
-                    Exams = exams
-                });
+                return StatusCode(500, $"An error occurred while retrieving available exams: {ex.Message}");
             }
+        }
 
-            // 4️ - Normal user
-            return Ok(new
+        [HttpPost("submit-exam")]
+        public IActionResult SubmitExam([FromBody] SubmitExamDto submitRequest)
+        {
+            if (submitRequest == null || submitRequest.Answers == null || !submitRequest.Answers.Any())
+                return BadRequest(new { Success = false, Message = "Exam ID, User ID, and at least one answer are required" });
+
+            try
             {
-                Role = "User",
-            });
+                // Get user role first
+                var role = _context.Set<UserRoleDto>()
+                    .FromSqlRaw("EXEC Users.CheckUserType @UserID", new SqlParameter("@UserID", submitRequest.UserId))
+                    .AsNoTracking().AsEnumerable().FirstOrDefault();
+
+                if (role == null) 
+                    return NotFound(new { Success = false, Message = "User not found" });
+
+  
+                // Build DataTable for table-valued parameter
+                var answersTable = new DataTable();
+                answersTable.Columns.Add("QuestionID", typeof(int));
+                answersTable.Columns.Add("ChoiceNumber", typeof(int));
+
+                foreach (var answer in submitRequest.Answers)
+                {
+                    answersTable.Rows.Add(answer.QuestionId, answer.ChoiceNumber);
+                }
+
+                var examIdParam = new SqlParameter("@ExamID", submitRequest.ExamId);
+                var examinerIdParam = new SqlParameter("@ExaminerID", submitRequest.UserId);
+                var answersParam = new SqlParameter("@Answers", SqlDbType.Structured)
+                {
+                    TypeName = "Exam.AnswerInput",
+                    Value = answersTable
+                };
+
+                _context.Database.ExecuteSqlRaw("EXEC Exam.SubmitExamAnswers @ExamID, @ExaminerID, @Answers",
+                    examIdParam, examinerIdParam, answersParam);
+
+                return Ok(new { Success = true, Message = "Exam submitted successfully" });
+            }
+            catch (SqlException ex) when (ex.Number >= 50001 && ex.Number <= 50005)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = $"An error occurred while submitting the exam: {ex.Message}" });
+            }
         }
     }
 }

@@ -1,32 +1,41 @@
 import { BaseService } from '@/shared/api/baseService';
 import { ENDPOINTS } from '@/shared/api/endpoints';
-
-export interface User {
-    id: string;
-    username: string;
-    role: string;
-    token: string;
-}
+import type { ApiResponse } from '@/shared/api/types';
+import type { User } from '../types';
 
 export interface LoginResponse {
     user: User;
-    token: string;
+}
+
+export interface LoginData {
+    userID: number;
+    fName: string;
+    lName: string;
+    username: string;
+    email: string;
+    role: string;
+    gender: string;
 }
 
 export class AuthService extends BaseService {
-    async login(username: string): Promise<LoginResponse> {
-        // The user requirement says "use username and password" but commonly for these ITI exams it might be simpler?
-        // The user said "use username and password".
-        // I will stick to username/password.
-        // However, the previous mock data images suggest "role": "Applicant".
-        // I will send both.
-
-        // NOTE: Implementing a real API call. 
-        // If we need to mock this for the user to see immediately without backend, 
-        // I might add a fallback or mock mode. 
-        // But the user asked for "Service extended from base service", so I will write real code.
-
-        return this.post<LoginResponse>(ENDPOINTS.AUTH.LOGIN, { username });
+    async login(username: string, password: string): Promise<LoginResponse> {
+        const response = await this.post<ApiResponse<LoginData>>(ENDPOINTS.AUTH.LOGIN, { username, password });
+        
+        // Extract user data from ApiResponse wrapper
+        const userData = response.data;
+        
+        // Transform the API response to match our LoginResponse format
+        return {
+            user: {
+                userID: userData.userID,
+                fName: userData.fName,
+                lName: userData.lName,
+                username: userData.username,
+                email: userData.email,
+                role: userData.role as User['role'],
+                gender: userData.gender,
+            },
+        };
     }
 }
 

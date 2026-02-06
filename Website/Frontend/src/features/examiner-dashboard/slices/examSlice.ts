@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     createSlice,
     createAsyncThunk,
@@ -25,10 +26,9 @@ const initialState: ExamState = {
 
 export const fetchExams = createAsyncThunk(
     'exams/fetchAvailable',
-    async (userId: string, { rejectWithValue }) => {
+    async (userId: number, { rejectWithValue }) => {
         try {
             const response = await examService.getAvailableExams(userId);
-            // Adjust if response is wrapped
             return response;
         } catch (error: any) {
             return rejectWithValue(
@@ -40,9 +40,9 @@ export const fetchExams = createAsyncThunk(
 
 export const fetchQuestions = createAsyncThunk(
     'exams/fetchQuestions',
-    async (examId: number | string, { rejectWithValue }) => {
+    async (payload:{ courseId: number | string; examId: number | string }, { rejectWithValue }) => {
         try {
-            const response = await examService.getExamQuestions(examId);
+            const response = await examService.getExamQuestions(payload.courseId, payload.examId);
             return response;
         } catch (error: any) {
             return rejectWithValue(
@@ -87,14 +87,7 @@ const examSlice = createSlice({
             })
             .addCase(fetchExams.fulfilled, (state, action) => {
                 state.loading = false;
-                // Handle if payload is wrapped. Assuming array for now based on service return type
-                if (Array.isArray(action.payload)) {
-                    state.exams = action.payload;
-                } else {
-                    // If the API returns { role: ..., exams: ... }
-                    // @ts-ignore
-                    state.exams = action.payload.exams || [];
-                }
+                state.exams = action.payload;
             })
             .addCase(fetchExams.rejected, (state, action) => {
                 state.loading = false;

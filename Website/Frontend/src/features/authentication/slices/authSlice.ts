@@ -1,32 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import { authService, type User, type LoginResponse } from '../services/authService';
+import { authService, type LoginResponse } from '../services/authService';
+import { type User } from '../types';
 
 interface AuthState {
     user: User | null;
-    token: string | null;
     isAuthenticated: boolean;
     loading: boolean;
     error: string | null;
 }
 
-// Check local storage for initial state
-const token = localStorage.getItem('token');
+
 const userStr = localStorage.getItem('user');
 
 const initialState: AuthState = {
     user: userStr ? JSON.parse(userStr) : null,
-    token: token || null,
-    isAuthenticated: !!token,
+    isAuthenticated: !!userStr,
     loading: false,
     error: null,
 };
 
 export const loginUser = createAsyncThunk(
     'auth/login',
-    async (credentials: { username: string }, { rejectWithValue }) => {
+    async (credentials: { username: string , password : string }, { rejectWithValue }) => {
         try {
-            const response = await authService.login(credentials.username);
+            const response = await authService.login(credentials.username , credentials.password);
             return response;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -43,12 +41,14 @@ export const loginDummyUser = createAsyncThunk(
 
             return {
                 user: {
-                    id: 'dummy-admin-123',
-                    username: 'Test Administrator',
-                    role: 'admin',
-                    token: 'dummy-jwt-token-123456'
+                    userID: 1,
+                    fName: 'Test',
+                    lName: 'Administrator',
+                    username: 'admin',
+                    email: 'admin@example.com',
+                    role: 'A',
+                    gender: 'M',
                 },
-                token: 'dummy-jwt-token-123456'
             } as LoginResponse;
         } catch (error: any) {
             return rejectWithValue('Dummy login failed');
@@ -62,9 +62,7 @@ const authSlice = createSlice({
     reducers: {
         logout: (state) => {
             state.user = null;
-            state.token = null;
             state.isAuthenticated = false;
-            localStorage.removeItem('token');
             localStorage.removeItem('user');
         },
     },
@@ -78,8 +76,6 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload.user;
-                state.token = action.payload.token;
-                localStorage.setItem('token', action.payload.token);
                 localStorage.setItem('user', JSON.stringify(action.payload.user));
             })
 
@@ -96,8 +92,6 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload.user;
-                state.token = action.payload.token;
-                localStorage.setItem('token', action.payload.token);
                 localStorage.setItem('user', JSON.stringify(action.payload.user));
             })
             .addCase(loginDummyUser.rejected, (state, action) => {
