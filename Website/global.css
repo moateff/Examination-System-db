@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+@theme {
+  /* Premium Light Theme Palette */
+  --color-primary: #FFFFFF;
+  --color-secondary: #F1F5F9;
+  /* Slate 100 */
+  --color-tertiary: #E2E8F0;
+  /* Slate 200 */
+
+  /* Brand Colors - Red for Premium feel */
+  --color-font-primary: #DC2626;
+  /* Red 600 */
+  --color-font-gray: #64748B;
+  /* Slate 500 */
+  --color-font-white: #0F172A;
+  /* Slate 900 (Main text color, remapped from 'white' variable name) */
+
+  --color-border-primary: #E2E8F0;
+  /* Slate 200 */
+
+  --color-text-linear: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+
+  --color-btn-primary-color1: #DC2626;
+  --color-btn-primary-color2: #B91C1C;
+
+  --color-card-primary: #FFFFFF;
+  --color-card-secondary: #F8FAFC;
+  /* Slate 50 */
+}
+
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+
+  html,
+  body,
+  #root {
+    @apply bg-slate-50 text-slate-900 min-h-screen antialiased;
+  }
+
+  /* Refined Light Scrollbar */
+  body {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E1 transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+}
+
+@layer components {
+  .orange-glow {
+    /* Updated to Red glow to match theme */
+    box-shadow: 0 0 25px rgba(220, 38, 38, 0.15);
+  }
+
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal {
+  0% {
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-reveal {
+  animation: reveal 2s infinite linear both;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.slide-in-up {
+  animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeLoop {
+
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
