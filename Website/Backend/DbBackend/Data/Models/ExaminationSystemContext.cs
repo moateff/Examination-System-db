@@ -17,7 +17,7 @@ public partial class ExaminationSystemContext : DbContext
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Data Source=localhost\\SQLEXPRESS;Initial Catalog=Examination_System;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;Command Timeout=0");
+        => optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=Examination_System;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;Command Timeout=0");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -19,6 +19,36 @@ namespace DbBackend.Controllers
             _context = context;
         }
 
+        [HttpGet("health")]
+        public IActionResult Health()
+        {
+            try
+            {
+                // Test basic database connection
+                _context.Database.OpenConnection();
+                _context.Database.CloseConnection();
+                
+                // Try to execute a test query
+                var result = _context.Database.SqlQuery<int>($"SELECT 1 AS TestResult").ToList();
+                
+                return Ok(new { 
+                    Success = true, 
+                    Message = "Database connection successful",
+                    DatabaseName = _context.Database.GetDbConnection().Database,
+                    ServerName = _context.Database.GetDbConnection().DataSource
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    Success = false, 
+                    Message = "Database connection failed",
+                    Error = ex.Message,
+                    StackTrace = ex.StackTrace
+                });
+            }
+        }
+
         [HttpGet("exam/{CourseId}/{ExamId}")]
         public IActionResult GetExam(int CourseId, int ExamId)
         {
@@ -86,7 +116,8 @@ namespace DbBackend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred during login: {ex.Message}");
+                var innerError = ex.InnerException?.Message ?? "No inner exception";
+                return StatusCode(500, $"An error occurred during login: {ex.Message} | Inner: {innerError}");
             }
         }
 

@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://localhost:7155/api'; // Replace with actual backend URL
+export const BASE_URL = 'http://localhost:5000/api'; // Backend API
 
 export const ENDPOINTS = {
     AUTH: {
